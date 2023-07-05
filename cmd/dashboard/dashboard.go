@@ -141,7 +141,7 @@ func main() {
 
 	go lib.UpdateHistory(gt7c, history)
 
-	const redrawInterval = 16 * time.Millisecond
+	const redrawInterval = 500 * time.Millisecond
 	ctx, cancel := context.WithCancel(context.Background())
 	lc, err := linechart.New(
 		linechart.AxesCellOpts(cell.FgColor(cell.ColorRed)),
@@ -270,10 +270,10 @@ func getTireString(temp float32) string {
 
 func getColorOptForTemp(temp float32) cell.Option {
 
-	if temp >= 72 {
-		return cell.BgColor(cell.ColorGreen)
-	} else if temp >= 78 {
+	if temp >= 78 {
 		return cell.BgColor(cell.ColorRed)
+	} else if temp >= 72 {
+		return cell.BgColor(cell.ColorGreen)
 	}
 
 	return cell.BgColor(cell.ColorBlue)
