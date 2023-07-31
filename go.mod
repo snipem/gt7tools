@@ -3,6 +3,7 @@ module github.com/snipem/gt7-utils
 go 1.20
 
 require (
+	github.com/0xcafed00d/joystick v1.0.1
 	github.com/hegedustibor/htgo-tts v0.0.0-20230402053941-cd8d1a158135
 	github.com/mum4k/termdash v0.18.0
 	github.com/snipem/go-gt7-telemetry v0.0.0-20230701065033-cf5d68d36c92

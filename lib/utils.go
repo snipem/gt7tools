@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"fmt"
 	gt7 "github.com/snipem/go-gt7-telemetry/lib"
 	"time"
 )
@@ -28,4 +29,9 @@ func UpdateHistory(gt7c *gt7.GT7Communication, history *History) {
 		oldPackageId = gt7c.LastData.PackageID
 		time.Sleep(16 * time.Millisecond)
 	}
+}
+
+func Flush() error {
+	_, err := fmt.Print("\033[H\033[2J")
+	return err
 }
