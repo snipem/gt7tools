@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	gt7 "github.com/snipem/go-gt7-telemetry/lib"
 	"github.com/snipem/gt7-utils/lib"
 	"log"
 	"os"
@@ -10,7 +11,11 @@ import (
 )
 
 func main() {
-	gt7c := lib.NewFakeGT7Communication()
+
+	//gt7c := lib.NewFakeGT7Communication()
+	//go gt7c.Run()
+
+	gt7c := gt7.NewGT7Communication("255.255.255.255")
 	go gt7c.Run()
 
 	gameRuns := true
