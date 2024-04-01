@@ -1,23 +1,8 @@
-// Copyright 2019 Google Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-// Binary linechartdemo displays a linechart widget.
-// Exist when 'q' is pressed.
 package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/mum4k/termdash/container/grid"
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/widgets/barchart"
@@ -34,6 +19,16 @@ import (
 )
 
 var gt7c = &gt7.GT7Communication{}
+
+const show_n_values = 500
+
+func createArrayWithValues(value int, max_values int) []float64 {
+	var s []float64
+	for i := 0; i < max_values; i++ {
+		s = append(s, float64(value))
+	}
+	return s
+}
 
 // sineInputs generates values from -1 to 1 for display on the line chart.
 func sineInputs() []float64 {
@@ -62,6 +57,8 @@ func takeLastN(slice []int, n int) []int {
 	return slice[startIndex:]
 }
 
+const showTrainingBars = true
+
 // playLineChart continuously adds values to the LineChart, once every delay.
 // Exits when the context expires.
 func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.History, delay time.Duration) {
@@ -72,23 +69,32 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 		select {
 		case <-ticker.C:
 			i = (i + 1) % len(inputs)
-			if err := lc.Series("throttle", convertIntSliceToFloatSlice(takeLastN(history.Throttle, 1000)),
+			if err := lc.Series("throttle", convertIntSliceToFloatSlice(takeLastN(history.Throttle, show_n_values)),
 				linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(64))),
 			); err != nil {
 				panic(err)
 			}
 
-			if err := lc.Series("braking", convertIntSliceToFloatSlice(takeLastN(history.Brake, 1000)),
+			if err := lc.Series("braking", convertIntSliceToFloatSlice(takeLastN(history.Brake, show_n_values)),
 				linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(160))),
 			); err != nil {
 				panic(err)
 			}
 
-			//i2 := (i + 100) % len(inputs)
-			//rotated2 := append(inputs[i2:], inputs[:i2]...)
-			//if err := lc.Series("second", rotated2, linechart.SeriesCellOpts(cell.FgColor(cell.ColorWhite))); err != nil {
-			//	panic(err)
-			//}
+			// Static bars
+			if showTrainingBars {
+				trainingBars := []int{25, 50, 75, 99}
+
+				for _, trainingBar := range trainingBars {
+
+					if err := lc.Series(fmt.Sprintf("%d", trainingBar), createArrayWithValues(trainingBar, show_n_values),
+						linechart.SeriesCellOpts(cell.FgColor(cell.ColorWhite)),
+					); err != nil {
+						panic(err)
+					}
+
+				}
+			}
 
 		case <-ctx.Done():
 			return
@@ -135,16 +141,25 @@ func main() {
 	gt7c = gt7.NewGT7Communication("255.255.255.255")
 	go gt7c.Run()
 
-	history := &lib.History{}
+	history := &lib.History{
+		Throttle: make([]int, show_n_values),
+		Brake:    make([]int, show_n_values),
+	}
 
 	go lib.UpdateHistory(gt7c, history)
 
-	const redrawInterval = 16 * time.Millisecond
+	//const redrawInterval = 16 * time.Millisecond // 60 FPS
+	const redrawInterval = 32 * time.Millisecond
+
 	ctx, cancel := context.WithCancel(context.Background())
 	lc, err := linechart.New(
 		linechart.AxesCellOpts(cell.FgColor(cell.ColorRed)),
 		linechart.YLabelCellOpts(cell.FgColor(cell.ColorGreen)),
 		linechart.XLabelCellOpts(cell.FgColor(cell.ColorCyan)),
+		linechart.YAxisCustomScale(0, 100),
+		linechart.YAxisFormattedValues(func(value float64) string {
+			return fmt.Sprintf("%d", int(value))
+		}),
 	)
 
 	bc, err := barchart.New(
@@ -167,8 +182,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	go playLineChart(ctx, lc, history, redrawInterval/3)
-	go playBarChart(ctx, bc, redrawInterval/3)
+	go playLineChart(ctx, lc, history, redrawInterval)
+	go playBarChart(ctx, bc, redrawInterval)
 
 	tbx, err := termbox.New()
 	if err != nil {
