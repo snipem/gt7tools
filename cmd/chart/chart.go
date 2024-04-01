@@ -57,7 +57,7 @@ func takeLastN(slice []int, n int) []int {
 	return slice[startIndex:]
 }
 
-const showTrainingBars = true
+var showTrainingBars = true
 
 // playLineChart continuously adds values to the LineChart, once every delay.
 // Exits when the context expires.
@@ -68,6 +68,7 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 	for i := 0; ; {
 		select {
 		case <-ticker.C:
+
 			i = (i + 1) % len(inputs)
 			if err := lc.Series("throttle", convertIntSliceToFloatSlice(takeLastN(history.Throttle, show_n_values)),
 				linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(64))),
@@ -83,12 +84,18 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 
 			// Static bars
 			if showTrainingBars {
+				trainingColor := cell.FgColor(cell.ColorWhite)
+
+				if history.Brake[len(history.Brake)-1] == 100 {
+					trainingColor = cell.BgColor(cell.ColorRed)
+				}
+
 				trainingBars := []int{25, 50, 75, 99}
 
 				for _, trainingBar := range trainingBars {
 
 					if err := lc.Series(fmt.Sprintf("%d", trainingBar), createArrayWithValues(trainingBar, show_n_values),
-						linechart.SeriesCellOpts(cell.FgColor(cell.ColorWhite)),
+						linechart.SeriesCellOpts(trainingColor),
 					); err != nil {
 						panic(err)
 					}
@@ -131,12 +138,9 @@ func playBarChart(ctx context.Context, bc *barchart.BarChart, delay time.Duratio
 	}
 }
 
-func main() {
-	//t, err := tcell.New()
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer t.Close()
+func Run(showTrainingBarsOption bool) {
+
+	showTrainingBars = showTrainingBarsOption
 
 	gt7c = gt7.NewGT7Communication("255.255.255.255")
 	go gt7c.Run()
@@ -233,4 +237,8 @@ func main() {
 	if err := termdash.Run(ctx, tbx, cont, termdash.KeyboardSubscriber(quitter), termdash.RedrawInterval(redrawInterval)); err != nil {
 		panic(err)
 	}
+}
+
+func main() {
+	Run(true)
 }
