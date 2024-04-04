@@ -82,7 +82,8 @@ func main() {
 			log.Fatal(err)
 		}
 		imageUrl := gtsport.GetImageUrl(timetrial.Parameters.Event.FlyerImagePath)
-		fmt.Printf("%d: %s %s\n", i+1, trackname, imageUrl)
+		daysToGo := time.Until(timetrial.Parameters.Online.EndDate).Hours() / 24
+		fmt.Printf("%d: %s - %.2f days to go\n%s\n", i+1, trackname, daysToGo, imageUrl)
 		//img, err := downloadImage(imageUrl)
 		//if err != nil {
 		//	log.Fatal(err)
@@ -137,6 +138,8 @@ func main() {
 				lastLapTime := GetDurationFromGT7Time(gt7c.LastData.LastLap)
 
 				fmt.Printf("\nLast Lap #%2d : %s\n", gt7c.LastData.CurrentLap, GetSportFormat(lastLapTime))
+				fmt.Printf("🌍WR Diff    : ")
+				printTimeInColor(worldRecord - lastLapTime)
 				fmt.Printf("🥇Gold Diff  : ")
 				printTimeInColor(goldTime - lastLapTime)
 				fmt.Printf("🥈Silver Diff: ")
