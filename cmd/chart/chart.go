@@ -69,6 +69,11 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 		select {
 		case <-ticker.C:
 
+			if gt7c.LastData.IsPaused {
+				// Skip recalculation if paused, makes the graph pause
+				continue
+			}
+
 			i = (i + 1) % len(inputs)
 			if err := lc.Series("throttle", convertIntSliceToFloatSlice(takeLastN(history.Throttle, show_n_values)),
 				linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(64))),
@@ -88,7 +93,14 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 
 				if history.Brake[len(history.Brake)-1] == 100 {
 					trainingColor = cell.BgColor(cell.ColorRed)
+				} else if history.Brake[len(history.Brake)-1] > history.Brake[len(history.Brake)-2] &&
+					!straightIncreaseFromZeroBraking(history.Brake) {
+					// Braking increasing after reaching peak
+					trainingColor = cell.BgColor(cell.ColorBlue)
 				}
+				//else if gt7c.LastData.IsTCSEngaged {
+				//	trainingColor = cell.BgColor(cell.ColorBlue)
+				//}
 
 				trainingBars := []int{25, 50, 75, 99}
 
@@ -107,6 +119,33 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 			return
 		}
 	}
+}
+
+func straightIncreaseFromZeroBraking(brake []int) bool {
+
+	// Ignore all values prior to last full brake
+	valuesSinceLastFullbrake := []int{}
+	for i := len(brake) - 1; i > 0; i-- {
+		valuesSinceLastFullbrake = append([]int{brake[i]}, valuesSinceLastFullbrake...)
+		if brake[i] == 0 {
+			break
+		}
+	}
+
+	if len(valuesSinceLastFullbrake) == 0 {
+		return false
+	}
+
+	for i := len(valuesSinceLastFullbrake) - 1; i > 0; i-- {
+		if valuesSinceLastFullbrake[i] < valuesSinceLastFullbrake[i-1] {
+			return false
+		}
+		if valuesSinceLastFullbrake[i] == 0 {
+			break
+		}
+	}
+
+	return true
 }
 
 // playBarChart continuously changes the displayed values on the bar chart once every delay.
