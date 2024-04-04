@@ -8,13 +8,13 @@ require (
 	github.com/hegedustibor/htgo-tts v0.0.0-20230402053941-cd8d1a158135
 	github.com/jayco/go-emoji-flag v0.0.0-20190810054606-01604da018da
 	github.com/mum4k/termdash v0.18.0
-	github.com/snipem/go-gt7-telemetry v0.0.0-20230701065033-cf5d68d36c92
+	github.com/snipem/go-gt7-telemetry v0.0.0-20240403094644-aa38c51d7166
 	github.com/stretchr/testify v1.9.0
+	github.com/veandco/go-sdl2 v0.4.38
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dolmen-go/kittyimg v0.0.0-20220904140504-22f6493b700f // indirect
 	github.com/hajimehoshi/go-mp3 v0.3.3 // indirect
 	github.com/hajimehoshi/oto/v2 v2.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
