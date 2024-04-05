@@ -91,9 +91,9 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 			if showTrainingBars {
 				trainingColor := cell.FgColor(cell.ColorWhite)
 
-				if history.Brake[len(history.Brake)-1] == 100 {
-					trainingColor = cell.BgColor(cell.ColorRed)
-				} else if history.Brake[len(history.Brake)-1] > history.Brake[len(history.Brake)-2] &&
+				//if history.Brake[len(history.Brake)-1] == 100 {
+				//	trainingColor = cell.BgColor(cell.ColorRed)
+				if history.Brake[len(history.Brake)-1] > history.Brake[len(history.Brake)-2] &&
 					!straightIncreaseFromZeroBraking(history.Brake) {
 					// Braking increasing after reaching peak
 					trainingColor = cell.BgColor(cell.ColorBlue)
