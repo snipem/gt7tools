@@ -32,5 +32,15 @@ $(BINDIR)/%-linux: cmd/%
 	@mkdir -p $(dir $@)
 	GOOS=linux GOARCH=amd64 $(GO) build -o $@ ./$<
 
+install:
+	$(GO) install cmd/banner/gt7banner.go
+	$(GO) install cmd/braketrainer/gt7braketrainer.go
+	$(GO) install cmd/dashboard/gt7dashboard.go
+	$(GO) install cmd/chart/gt7chart.go
+	$(GO) install cmd/copilot/gt7copilot.go
+	$(GO) install cmd/timetrial/gt7timetrial.go
+	$(GO) install cmd/trainer/gt7trainer.go
+
+
 clean:
 	rm -rf $(BINDIR)
