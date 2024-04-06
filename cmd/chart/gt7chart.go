@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"github.com/mum4k/termdash/container/grid"
 	"github.com/mum4k/termdash/terminal/termbox"
@@ -74,17 +75,21 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 				continue
 			}
 
-			i = (i + 1) % len(inputs)
-			if err := lc.Series("throttle", convertIntSliceToFloatSlice(takeLastN(history.Throttle, show_n_values)),
-				linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(64))),
-			); err != nil {
-				panic(err)
+			if showThrottle {
+				i = (i + 1) % len(inputs)
+				if err := lc.Series("throttle", convertIntSliceToFloatSlice(takeLastN(history.Throttle, show_n_values)),
+					linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(64))),
+				); err != nil {
+					panic(err)
+				}
 			}
 
-			if err := lc.Series("braking", convertIntSliceToFloatSlice(takeLastN(history.Brake, show_n_values)),
-				linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(160))),
-			); err != nil {
-				panic(err)
+			if showBrake {
+				if err := lc.Series("braking", convertIntSliceToFloatSlice(takeLastN(history.Brake, show_n_values)),
+					linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(160))),
+				); err != nil {
+					panic(err)
+				}
 			}
 
 			// Static bars
@@ -177,9 +182,7 @@ func playBarChart(ctx context.Context, bc *barchart.BarChart, delay time.Duratio
 	}
 }
 
-func Run(showTrainingBarsOption bool) {
-
-	showTrainingBars = showTrainingBarsOption
+func Run() {
 
 	gt7c = gt7.NewGT7Communication("255.255.255.255")
 	go gt7c.Run()
@@ -278,6 +281,16 @@ func Run(showTrainingBarsOption bool) {
 	}
 }
 
+var showBrake bool
+var showThrottle bool
+
 func main() {
-	Run(true)
+
+	flag.BoolVar(&showTrainingBars, "show-training-bars", false, "Show training bars")
+	flag.BoolVar(&showBrake, "show-brake", true, "Show brake")
+	flag.BoolVar(&showThrottle, "show-throttle", true, "Show throttle")
+
+	flag.Parse()
+
+	Run()
 }
