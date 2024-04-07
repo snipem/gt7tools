@@ -23,6 +23,12 @@ var gt7c = &gt7.GT7Communication{}
 
 const show_n_values = 500
 
+var showBrake bool
+var showThrottle bool
+var signalRisingTrailbreak bool
+
+var showTrainingBars bool
+
 func createArrayWithValues(value int, max_values int) []float64 {
 	var s []float64
 	for i := 0; i < max_values; i++ {
@@ -57,8 +63,6 @@ func takeLastN(slice []int, n int) []int {
 	startIndex := len(slice) - n
 	return slice[startIndex:]
 }
-
-var showTrainingBars = true
 
 // playLineChart continuously adds values to the LineChart, once every delay.
 // Exits when the context expires.
@@ -281,13 +285,11 @@ func Run() {
 	}
 }
 
-var showBrake bool
-var showThrottle bool
-
 func main() {
 
 	flag.BoolVar(&showTrainingBars, "show-training-bars", false, "Show training bars")
 	flag.BoolVar(&showBrake, "show-brake", true, "Show brake")
+	flag.BoolVar(&signalRisingTrailbreak, "signal-rising-trailbreak", true, "Signal rising trailbreak")
 	flag.BoolVar(&showThrottle, "show-throttle", true, "Show throttle")
 
 	flag.Parse()
