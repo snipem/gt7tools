@@ -218,6 +218,7 @@ func Run() {
 	history := &lib.History{
 		Throttle: make([]int, show_n_values),
 		Brake:    make([]int, show_n_values),
+		Gear:    make([]int, show_n_values),
 	}
 
 	go lib.UpdateHistory(gt7c, history)
