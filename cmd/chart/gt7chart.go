@@ -104,8 +104,15 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 			}
 
 			if showBrake {
+				brakeColor := cell.ColorNumber(160)
+
+				if signalRisingTrailbreak && breakingIncreasing(history) {
+					// Braking increasing after reaching peak
+					brakeColor = cell.ColorBlue
+				}
+
 				if err := lc.Series("braking", convertIntSliceToFloatSlice(takeLastN(history.Brake, show_n_values)),
-					linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(160))),
+					linechart.SeriesCellOpts(cell.FgColor(brakeColor)),
 				); err != nil {
 					panic(err)
 				}
@@ -117,11 +124,6 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 
 				//if history.Brake[len(history.Brake)-1] == 100 {
 				//	trainingColor = cell.BgColor(cell.ColorRed)
-				if history.Brake[len(history.Brake)-1] > history.Brake[len(history.Brake)-2] &&
-					!straightIncreaseFromZeroBraking(history.Brake) {
-					// Braking increasing after reaching peak
-					trainingColor = cell.BgColor(cell.ColorBlue)
-				}
 				//else if gt7c.LastData.IsTCSEngaged {
 				//	trainingColor = cell.BgColor(cell.ColorBlue)
 				//}
@@ -143,6 +145,11 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 			return
 		}
 	}
+}
+
+func breakingIncreasing(history *lib.History) bool {
+	return history.Brake[len(history.Brake)-1] > history.Brake[len(history.Brake)-2] &&
+		!straightIncreaseFromZeroBraking(history.Brake)
 }
 
 func mapGearToScale(maxGear int, scale int, originalGear []int) (mappedGears []int) {
