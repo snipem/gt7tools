@@ -25,6 +25,7 @@ const show_n_values = 500
 
 var showBrake bool
 var showThrottle bool
+var showGear bool
 var signalRisingTrailbreak bool
 
 var showTrainingBars bool
@@ -88,6 +89,20 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 				}
 			}
 
+			if showGear {
+				// TODO get this from telemetry
+				maxGear := 8
+				scale := 100
+
+				i = (i + 1) % len(inputs)
+				if err := lc.Series("gear", convertIntSliceToFloatSlice(mapGearToScale(maxGear, scale, takeLastN(history.Gear, show_n_values))),
+					linechart.SeriesCellOpts(cell.FgColor(cell.ColorGray)),
+				); err != nil {
+					panic(err)
+				}
+
+			}
+
 			if showBrake {
 				if err := lc.Series("braking", convertIntSliceToFloatSlice(takeLastN(history.Brake, show_n_values)),
 					linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(160))),
@@ -128,6 +143,15 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 			return
 		}
 	}
+}
+
+func mapGearToScale(maxGear int, scale int, originalGear []int) (mappedGears []int) {
+	multiplier := scale / maxGear
+
+	for i := 0; i < len(originalGear); i++ {
+		mappedGears = append(mappedGears, originalGear[i]*multiplier)
+	}
+	return mappedGears
 }
 
 func straightIncreaseFromZeroBraking(brake []int) bool {
@@ -287,10 +311,11 @@ func Run() {
 
 func main() {
 
-	flag.BoolVar(&showTrainingBars, "show-training-bars", false, "Show training bars")
+	flag.BoolVar(&showTrainingBars, "show-training-bars", true, "Show training bars")
 	flag.BoolVar(&showBrake, "show-brake", true, "Show brake")
 	flag.BoolVar(&signalRisingTrailbreak, "signal-rising-trailbreak", true, "Signal rising trailbreak")
-	flag.BoolVar(&showThrottle, "show-throttle", true, "Show throttle")
+	flag.BoolVar(&showThrottle, "show-throttle", false, "Show throttle")
+	flag.BoolVar(&showGear, "show-gear", true, "Show gear mapped to scale")
 
 	flag.Parse()
 

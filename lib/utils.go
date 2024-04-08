@@ -9,6 +9,7 @@ import (
 type History struct {
 	Throttle []int
 	Brake    []int
+	Gear     []int
 }
 
 // UpdateHistory updates the history in an endless loop with throttle and breaking information
@@ -21,8 +22,10 @@ func UpdateHistory(gt7c *gt7.GT7Communication, history *History) {
 
 			throttle := int(gt7c.LastData.Throttle)
 			brake := int(gt7c.LastData.Brake)
+			gear := int(gt7c.LastData.CurrentGear)
 			history.Throttle = append(history.Throttle, throttle)
 			history.Brake = append(history.Brake, brake)
+			history.Gear = append(history.Gear, gear)
 			//fmt.Printf("package id: %d, brake: %d, throttle: %d\n", gt7c.LastData.PackageID, brake, throttle)
 			//fmt.Printf("Got %d packets\n", len(history.Throttle))
 		}

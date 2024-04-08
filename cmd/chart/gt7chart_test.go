@@ -38,3 +38,8 @@ func TestRun(t *testing.T) {
 		fmt.Println("Timeout: Run() took too long.")
 	}
 }
+
+func Test_mapGearToScale(t *testing.T) {
+	mappedGers := mapGearToScale(5, 100, []int{0, 1, 2, 3, 4, 5, 5, 3, 2, 1, 0})
+	assert.Equal(t, []int{0, 20, 40, 60, 80, 100, 100, 60, 40, 20, 0}, mappedGers)
+}
