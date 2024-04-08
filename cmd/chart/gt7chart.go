@@ -87,6 +87,8 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 				); err != nil {
 					panic(err)
 				}
+			} else {
+				lc.Series("throttle", createArrayWithValues(0, show_n_values), linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(64))))
 			}
 
 			if showGear {
@@ -101,6 +103,8 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 					panic(err)
 				}
 
+			} else {
+				lc.Series("gear", createArrayWithValues(0, show_n_values), linechart.SeriesCellOpts(cell.FgColor(cell.ColorGray)))
 			}
 
 			if showBrake {
@@ -116,11 +120,18 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 				); err != nil {
 					panic(err)
 				}
+			} else {
+				lc.Series("braking", createArrayWithValues(0, show_n_values), linechart.SeriesCellOpts(cell.FgColor(cell.ColorWhite)))
 			}
 
 			// Static bars
 			if showTrainingBars {
 				trainingColor := cell.FgColor(cell.ColorWhite)
+
+				if signalRisingTrailbreak && breakingIncreasing(history) {
+					// Braking increasing after reaching peak
+					trainingColor = cell.BgColor(cell.ColorBlue)
+				}
 
 				//if history.Brake[len(history.Brake)-1] == 100 {
 				//	trainingColor = cell.BgColor(cell.ColorRed)
@@ -225,7 +236,7 @@ func Run() {
 	history := &lib.History{
 		Throttle: make([]int, show_n_values),
 		Brake:    make([]int, show_n_values),
-		Gear:    make([]int, show_n_values),
+		Gear:     make([]int, show_n_values),
 	}
 
 	go lib.UpdateHistory(gt7c, history)
@@ -309,6 +320,22 @@ func Run() {
 	quitter := func(k *terminalapi.Keyboard) {
 		if k.Key == 'q' || k.Key == 'Q' {
 			cancel()
+		}
+
+		if k.Key == 'p' {
+			showTrainingBars = !showTrainingBars
+		}
+
+		if k.Key == 't' {
+			showThrottle = !showThrottle
+		}
+
+		if k.Key == 'b' {
+			showBrake = !showBrake
+		}
+
+		if k.Key == 'g' {
+			showGear = !showGear
 		}
 	}
 
