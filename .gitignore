@@ -2,3 +2,4 @@ build
 
 .idea
 braketrainer.csv
+lib/dump/test_datafile.gob

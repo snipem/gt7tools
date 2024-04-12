@@ -9,6 +9,8 @@ import (
 	"github.com/mum4k/termdash/widgets/barchart"
 	gt7 "github.com/snipem/go-gt7-telemetry/lib"
 	"github.com/snipem/gt7-utils/lib"
+	"github.com/snipem/gt7-utils/lib/dump"
+	"log"
 	"math"
 	"time"
 
@@ -27,6 +29,7 @@ var showBrake bool
 var showThrottle bool
 var showGear bool
 var signalRisingTrailbreak bool
+var dumpFile string
 
 var showTrainingBars bool
 
@@ -230,8 +233,16 @@ func playBarChart(ctx context.Context, bc *barchart.BarChart, delay time.Duratio
 
 func Run() {
 
-	gt7c = gt7.NewGT7Communication("255.255.255.255")
-	go gt7c.Run()
+	if dumpFile != "" {
+		gt7d, err := dump.NewGT7Dump(dumpFile, gt7c)
+		if err != nil {
+			log.Fatal(err)
+		}
+		go gt7d.Run()
+	} else {
+		gt7c = gt7.NewGT7Communication("255.255.255.255")
+		go gt7c.Run()
+	}
 
 	history := &lib.History{
 		Throttle: make([]int, show_n_values),
@@ -351,6 +362,7 @@ func main() {
 	flag.BoolVar(&signalRisingTrailbreak, "signal-rising-trailbreak", true, "Signal rising trailbreak")
 	flag.BoolVar(&showThrottle, "show-throttle", false, "Show throttle")
 	flag.BoolVar(&showGear, "show-gear", true, "Show gear mapped to scale")
+	flag.StringVar(&dumpFile, "dump-file", "", "Use dump file for dump values instead of telemetry. Leave blank for real telemetry.")
 
 	flag.Parse()
 
