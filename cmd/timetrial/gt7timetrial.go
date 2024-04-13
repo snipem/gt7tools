@@ -7,7 +7,7 @@ import (
 	"github.com/fatih/color"
 	emoji "github.com/jayco/go-emoji-flag"
 	gt7 "github.com/snipem/go-gt7-telemetry/lib"
-	"github.com/snipem/gt7-utils/lib/gtsport"
+	"github.com/snipem/gt7tools/lib/gtsport"
 	"image"
 	_ "image/png"
 	"io"

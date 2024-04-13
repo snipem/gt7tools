@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	gt7 "github.com/snipem/go-gt7-telemetry/lib"
-	"github.com/snipem/gt7-utils/lib"
+	"github.com/snipem/gt7tools/lib"
 	"log"
 	"os"
 	"time"

@@ -3,3 +3,5 @@ build
 .idea
 braketrainer.csv
 lib/dump/test_datafile.gob
+datafile.gob.gz
+cmd/sdl/test.ttf

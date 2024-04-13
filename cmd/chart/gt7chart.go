@@ -7,9 +7,10 @@ import (
 	"github.com/mum4k/termdash/container/grid"
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/widgets/barchart"
+	"github.com/mum4k/termdash/widgets/text"
 	gt7 "github.com/snipem/go-gt7-telemetry/lib"
-	"github.com/snipem/gt7-utils/lib"
-	"github.com/snipem/gt7-utils/lib/dump"
+	"github.com/snipem/gt7tools/lib"
+	"github.com/snipem/gt7tools/lib/dump"
 	"log"
 	"math"
 	"time"
@@ -83,16 +84,9 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 				continue
 			}
 
-			if showThrottle {
-				i = (i + 1) % len(inputs)
-				if err := lc.Series("throttle", convertIntSliceToFloatSlice(takeLastN(history.Throttle, show_n_values)),
-					linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(64))),
-				); err != nil {
-					panic(err)
-				}
-			} else {
-				lc.Series("throttle", createArrayWithValues(0, show_n_values), linechart.SeriesCellOpts(cell.FgColor(cell.ColorNumber(64))))
-			}
+			updateSeries(lc, showThrottle, "throttle", history.Throttle, show_n_values, cell.FgColor(cell.ColorNumber(64)))
+
+			updateSeries(lc, true, "position", mapToInt(history.Position_Z, 0, 100), show_n_values, cell.FgColor(cell.ColorMagenta))
 
 			if showGear {
 				// TODO get this from telemetry
@@ -134,6 +128,7 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 				if signalRisingTrailbreak && breakingIncreasing(history) {
 					// Braking increasing after reaching peak
 					trainingColor = cell.BgColor(cell.ColorBlue)
+					warnBar
 				}
 
 				//if history.Brake[len(history.Brake)-1] == 100 {
@@ -158,6 +153,26 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 		case <-ctx.Done():
 			return
 		}
+	}
+}
+
+func mapToInt(z []float32, min int, max int) (out []int) {
+	out = make([]int, len(z))
+	for i, f := range z {
+		out[i] = int(f*float32(max-min)) + min
+	}
+	return out
+}
+
+func updateSeries(lc *linechart.LineChart, showSeries bool, label string, historyValues []int, showNValues int, color cell.Option) {
+	if showSeries {
+		if err := lc.Series(label, convertIntSliceToFloatSlice(takeLastN(historyValues, showNValues)),
+			linechart.SeriesCellOpts(color),
+		); err != nil {
+			panic(err)
+		}
+	} else {
+		lc.Series(label, createArrayWithValues(0, showNValues), linechart.SeriesCellOpts(color))
 	}
 }
 
@@ -231,6 +246,8 @@ func playBarChart(ctx context.Context, bc *barchart.BarChart, delay time.Duratio
 	}
 }
 
+var warnBar *Text
+
 func Run() {
 
 	if dumpFile != "" {
@@ -266,6 +283,8 @@ func Run() {
 		}),
 	)
 
+	warnChart, err := barchart.New()
+
 	bc, err := barchart.New(
 		barchart.BarColors([]cell.Color{
 			cell.ColorGreen,
@@ -289,6 +308,11 @@ func Run() {
 	go playLineChart(ctx, lc, history, redrawInterval)
 	go playBarChart(ctx, bc, redrawInterval)
 
+	warnBar, err = text.New()
+	if err != nil {
+		panic(err)
+	}
+
 	tbx, err := termbox.New()
 	if err != nil {
 		panic(err)
@@ -298,15 +322,14 @@ func Run() {
 	builder := grid.New()
 	builder.Add(
 		grid.RowHeightPerc(
-			99,
+			89,
 			grid.ColWidthPerc(85, grid.Widget(lc)),
 			grid.ColWidthPerc(15, grid.Widget(bc)),
 		),
-		//grid.RowHeightPerc(
-		//	50,
-		//	grid.ColWidthPerc(50, grid.Widget(lc)),
-		//	grid.ColWidthPerc(50, grid.Widget(lc)),
-		//),
+		grid.RowHeightPerc(
+			10,
+			grid.ColWidthPerc(99, grid.Widget()),
+		),
 	)
 	gridOpts, err := builder.Build()
 	if err != nil {
@@ -361,7 +384,7 @@ func main() {
 	flag.BoolVar(&showBrake, "show-brake", true, "Show brake")
 	flag.BoolVar(&signalRisingTrailbreak, "signal-rising-trailbreak", true, "Signal rising trailbreak")
 	flag.BoolVar(&showThrottle, "show-throttle", false, "Show throttle")
-	flag.BoolVar(&showGear, "show-gear", true, "Show gear mapped to scale")
+	flag.BoolVar(&showGear, "show-gear", false, "Show gear mapped to scale")
 	flag.StringVar(&dumpFile, "dump-file", "", "Use dump file for dump values instead of telemetry. Leave blank for real telemetry.")
 
 	flag.Parse()

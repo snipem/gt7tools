@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	gt7 "github.com/snipem/go-gt7-telemetry/lib"
-	"github.com/snipem/gt7-utils/lib/dump"
+	"github.com/snipem/gt7tools/lib/dump"
 	"os"
 	"os/signal"
 	"syscall"
