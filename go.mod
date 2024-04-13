@@ -1,4 +1,4 @@
-module github.com/snipem/gt7-utils
+module github.com/snipem/gt7tools
 
 go 1.20
 
