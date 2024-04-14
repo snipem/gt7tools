@@ -116,20 +116,17 @@ func NewRealOrDumpedGT7Connection(gt7c *gt7.GT7Communication, playstationIp stri
 			return fmt.Errorf("error loading dump file: %v", err)
 		}
 		log.Println("Using dump file: ", dumpFilePath)
-		go gt7dump.Run()
+		gt7dump.Run()
 
 	} else {
-		go func() {
-
-			for {
-				err := gt7c.Run()
-				if err != nil {
-					log.Printf("error running gt7c.Run(): %v", err)
-				}
-				log.Println("Sleeping 10 seconds before restarting gt7c.Run()")
-				time.Sleep(10 * time.Second)
+		for {
+			err := gt7c.Run()
+			if err != nil {
+				log.Printf("error running gt7c.Run(): %v", err)
 			}
-		}()
+			log.Println("Sleeping 10 seconds before restarting gt7c.Run()")
+			time.Sleep(10 * time.Second)
+		}
 	}
 	return nil
 }
