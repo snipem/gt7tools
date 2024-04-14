@@ -7,7 +7,6 @@ import (
 	"github.com/mum4k/termdash/container/grid"
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/widgets/barchart"
-	"github.com/mum4k/termdash/widgets/text"
 	gt7 "github.com/snipem/go-gt7-telemetry/lib"
 	"github.com/snipem/gt7tools/lib"
 	"github.com/snipem/gt7tools/lib/dump"
@@ -86,8 +85,6 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 
 			updateSeries(lc, showThrottle, "throttle", history.Throttle, show_n_values, cell.FgColor(cell.ColorNumber(64)))
 
-			updateSeries(lc, true, "position", mapToInt(history.Position_Z, 0, 100), show_n_values, cell.FgColor(cell.ColorMagenta))
-
 			if showGear {
 				// TODO get this from telemetry
 				maxGear := 8
@@ -128,7 +125,6 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 				if signalRisingTrailbreak && breakingIncreasing(history) {
 					// Braking increasing after reaching peak
 					trainingColor = cell.BgColor(cell.ColorBlue)
-					warnBar
 				}
 
 				//if history.Brake[len(history.Brake)-1] == 100 {
@@ -246,8 +242,6 @@ func playBarChart(ctx context.Context, bc *barchart.BarChart, delay time.Duratio
 	}
 }
 
-var warnBar *Text
-
 func Run() {
 
 	if dumpFile != "" {
@@ -283,7 +277,7 @@ func Run() {
 		}),
 	)
 
-	warnChart, err := barchart.New()
+	//warnChart, err := barchart.New()
 
 	bc, err := barchart.New(
 		barchart.BarColors([]cell.Color{
@@ -308,10 +302,10 @@ func Run() {
 	go playLineChart(ctx, lc, history, redrawInterval)
 	go playBarChart(ctx, bc, redrawInterval)
 
-	warnBar, err = text.New()
-	if err != nil {
-		panic(err)
-	}
+	//warnBar, err = text.New()
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	tbx, err := termbox.New()
 	if err != nil {
@@ -326,10 +320,10 @@ func Run() {
 			grid.ColWidthPerc(85, grid.Widget(lc)),
 			grid.ColWidthPerc(15, grid.Widget(bc)),
 		),
-		grid.RowHeightPerc(
-			10,
-			grid.ColWidthPerc(99, grid.Widget()),
-		),
+		//grid.RowHeightPerc(
+		//	10,
+		//	grid.ColWidthPerc(99, grid.Widget()),
+		//),
 	)
 	gridOpts, err := builder.Build()
 	if err != nil {
