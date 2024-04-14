@@ -45,10 +45,10 @@ type OnlineResult struct {
 	} `json:"result"`
 }
 
-func GetOnlineResult(eventId int, page int) (OnlineResult, error) {
+func GetOnlineResult(rankingId string, page int) (OnlineResult, error) {
 
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"board_id": fmt.Sprintf("p_rt_100%d_001", eventId),
+		"board_id": rankingId,
 		"page":     page,
 	})
 	if err != nil {

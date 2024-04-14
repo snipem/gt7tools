@@ -100,7 +100,7 @@ func main() {
 	fmt.Println(input.Text())
 
 	k, err := strconv.Atoi(input.Text())
-	onlineResult, err := gtsport.GetOnlineResult(activeTimetrials[k-1].EventID, 0)
+	onlineResult, err := gtsport.GetOnlineResult(activeTimetrials[k-1].Parameters.Online.RankingID, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
