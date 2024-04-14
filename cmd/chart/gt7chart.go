@@ -85,6 +85,8 @@ func playLineChart(ctx context.Context, lc *linechart.LineChart, history *lib.Hi
 
 			updateSeries(lc, showThrottle, "throttle", history.Throttle, show_n_values, cell.FgColor(cell.ColorNumber(64)))
 
+			//updateSeries(lc, true, "position", mapToInt(history.Position_Y, 0, 100), show_n_values, cell.FgColor(cell.ColorMagenta))
+
 			if showGear {
 				// TODO get this from telemetry
 				maxGear := 8
