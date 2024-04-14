@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/gob"
+	"fmt"
 	gt7 "github.com/snipem/go-gt7-telemetry/lib"
 	"io/ioutil"
+	"log"
 	"os"
 	"time"
 )
@@ -102,4 +104,32 @@ func (gt7d *GT7Dump) Run() {
 		// Start over
 	}
 
+}
+
+func NewRealOrDumpedGT7Connection(gt7c *gt7.GT7Communication, playstationIp string, dumpFilePath string) error {
+	gt7c = gt7.NewGT7Communication(playstationIp)
+
+	if dumpFilePath != "" {
+
+		gt7dump, err := NewGT7Dump(dumpFilePath, gt7c)
+		if err != nil {
+			return fmt.Errorf("error loading dump file: %v", err)
+		}
+		log.Println("Using dump file: ", dumpFilePath)
+		go gt7dump.Run()
+
+	} else {
+		go func() {
+
+			for {
+				err := gt7c.Run()
+				if err != nil {
+					log.Printf("error running gt7c.Run(): %v", err)
+				}
+				log.Println("Sleeping 10 seconds before restarting gt7c.Run()")
+				time.Sleep(10 * time.Second)
+			}
+		}()
+	}
+	return nil
 }
