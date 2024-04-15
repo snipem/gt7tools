@@ -74,9 +74,10 @@ func ReadGT7Data(filename string) ([]gt7.GTData, error) {
 }
 
 type GT7Dump struct {
-	LastData gt7.GTData
-	data     []gt7.GTData
-	gt7c     *gt7.GT7Communication
+	LastData          gt7.GTData
+	data              []gt7.GTData
+	gt7c              *gt7.GT7Communication
+	DataSendFrequency time.Duration
 }
 
 func NewGT7Dump(filename string, gt7c *gt7.GT7Communication) (GT7Dump, error) {
@@ -85,9 +86,10 @@ func NewGT7Dump(filename string, gt7c *gt7.GT7Communication) (GT7Dump, error) {
 		return GT7Dump{}, err
 	}
 	gt7d := GT7Dump{
-		LastData: gt7.GTData{},
-		data:     data,
-		gt7c:     gt7c,
+		LastData:          gt7.GTData{},
+		data:              data,
+		gt7c:              gt7c,
+		DataSendFrequency: 16 * time.Millisecond,
 	}
 	return gt7d, nil
 }
@@ -99,7 +101,7 @@ func (gt7d *GT7Dump) Run() {
 			gt7d.LastData = gt7d.data[i]
 			gt7d.gt7c.LastData = gt7d.LastData
 
-			time.Sleep(16 * time.Millisecond)
+			time.Sleep(gt7d.DataSendFrequency)
 		}
 		// Start over
 	}

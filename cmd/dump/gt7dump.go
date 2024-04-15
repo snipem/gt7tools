@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func main() {
@@ -33,7 +32,8 @@ func main() {
 				fmt.Println("Received package:", nrPackagesReceived)
 			}
 			oldPackageId = gt7c.LastData.PackageID
-			time.Sleep(16 * time.Millisecond)
+			//time.Sleep(16 * time.Millisecond)
+			// This will lead to missed packages
 		}
 
 	}()
